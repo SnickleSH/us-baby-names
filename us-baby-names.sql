@@ -2,7 +2,77 @@
 
 -- Task 1: Find the overall most popular girl and boy names and show how they have changed in popularity rankings over the years
 
+SELECT
+    Name, SUM(Births) AS num_babies
+FROM
+    names
+WHERE 
+    Gender = 'F'
+GROUP BY
+    Names
+ORDER BY
+    num_babies DESC
+LIMIT 1;
+-- Jessica
+
+SELECT
+    Name, SUM(Births) AS num_babies
+FROM
+    names
+WHERE 
+    Gender = 'M'
+GROUP BY
+    Names
+ORDER BY
+    num_babies DESC
+LIMIT 1;
+-- Michael
+
+SELECT
+    *
+FROM
+(WITH girl_names AS (
+    SELECT 
+        Year, Name, SUM(Births) AS num_babies
+    FROM
+        names
+    WHERE
+        Gender = 'F'
+    GROUP BY
+        Year, Name
+) AS popular_girl_names
+
+SELECT
+    Year, Name, ROW_NUMBER() OVER(PARTITION BY Year ORDER BY num_babies DESC) AS popularity
+FROM
+    girl_names;)
+WHERE
+Name = 'Jessica'
+
+SELECT
+    *
+FROM
+(WITH boy_names AS (
+    SELECT 
+        Year, Name, SUM(Births) AS num_babies
+    FROM
+        names
+    WHERE
+        Gender = 'M'
+    GROUP BY
+        Year, Name
+) AS popular_boy_names
+
+SELECT
+    Year, Name, ROW_NUMBER() OVER(PARTITION BY Year ORDER BY num_babies DESC) AS popularity
+FROM
+    boy_names;)
+WHERE
+Name = 'Michael'
+
 -- Task 2: Find the names with the biggest jumps in popularity from the first year of the data set to the last year
+
+
 
 -- Objective 2: Compare popularity across decades
 
