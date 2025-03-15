@@ -71,6 +71,30 @@ WHERE
 
 -- Task 2: Find the names with the biggest jumps in popularity from the first year of the data set to the last year
 
+WITH names_1980 AS(
+	WITH all_names AS (
+		SELECT Year, Name, SUM(Births) AS num_babies
+		FROM names
+		GROUP BY Year, Name
+	)
+	SELECT Year, Name, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY num_babies DESC) AS Popularity
+	FROM all_names
+	WHERE Year = 1980),
+names_2009 AS (
+	WITH all_names AS (
+		SELECT Year, Name, SUM(Births) AS num_babies
+		FROM names
+		GROUP BY Year, Name
+	)
+	SELECT Year, Name, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY num_babies DESC) AS Popularity
+	FROM all_names
+	WHERE Year = 2009
+)
+SELECT t1.Year, t1.Name, t1.Popularity AS Popularity_1980, t2. Popularity AS Popularity_2009, CAST(t2.Popularity AS SIGNED)- CAST(t1.Popularity AS SIGNED) AS Difference
+FROM names_1980 t1 
+INNER JOIN names_2009 t2 
+ON t1.Name = t2.Name
+ORDER BY Difference ASC;
 
 
 -- Objective 2: Compare popularity across decades
