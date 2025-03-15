@@ -1,3 +1,4 @@
+USE baby_names_db;
 -- Objective 1: Track changes in name popularity
 
 -- Task 1: Find the overall most popular girl and boy names and show how they have changed in popularity rankings over the years
@@ -9,7 +10,7 @@ FROM
 WHERE 
     Gender = 'F'
 GROUP BY
-    Names
+    Name
 ORDER BY
     num_babies DESC
 LIMIT 1;
@@ -22,14 +23,14 @@ FROM
 WHERE 
     Gender = 'M'
 GROUP BY
-    Names
+    Name
 ORDER BY
     num_babies DESC
 LIMIT 1;
 -- Michael
 
-SELECT
-    *
+SELECT 
+	*
 FROM
 (WITH girl_names AS (
     SELECT 
@@ -40,17 +41,16 @@ FROM
         Gender = 'F'
     GROUP BY
         Year, Name
-) AS popular_girl_names
-
+)
 SELECT
-    Year, Name, ROW_NUMBER() OVER(PARTITION BY Year ORDER BY num_babies DESC) AS popularity
+	Year, Name, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY num_babies DESC) AS popularity
 FROM
-    girl_names;)
+	girl_names) AS popular_girl_names
 WHERE
-Name = 'Jessica'
+	Name = 'Jessica';
 
-SELECT
-    *
+SELECT 
+	*
 FROM
 (WITH boy_names AS (
     SELECT 
@@ -61,14 +61,13 @@ FROM
         Gender = 'M'
     GROUP BY
         Year, Name
-) AS popular_boy_names
-
+)
 SELECT
-    Year, Name, ROW_NUMBER() OVER(PARTITION BY Year ORDER BY num_babies DESC) AS popularity
+	Year, Name, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY num_babies DESC) AS popularity
 FROM
-    boy_names;)
+	boy_names) AS popular_boy_names
 WHERE
-Name = 'Michael'
+	Name = 'Michael';
 
 -- Task 2: Find the names with the biggest jumps in popularity from the first year of the data set to the last year
 
