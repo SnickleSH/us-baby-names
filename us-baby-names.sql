@@ -96,11 +96,42 @@ INNER JOIN names_2009 t2
 ON t1.Name = t2.Name
 ORDER BY Difference ASC;
 
-
 -- Objective 2: Compare popularity across decades
-
 -- Task 1: For each year, return the 3 most popular girl names and 3 most popular boy names
-
+WITH boy_names AS(
+	SELECT Year, Name, SUM(Births) AS num_babies
+	FROM names
+    WHERE Gender = 'M'
+	GROUP BY Year, Name
+),
+ranked_boy_names AS(
+	SELECT Year, Name, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY num_babies DESC) AS Popularity
+	FROM boy_names
+),
+top_boy_names AS(
+	SELECT Year, Name, Popularity
+	FROM ranked_boy_names
+	WHERE Popularity < 4
+),
+girl_names AS(
+	SELECT Year, Name, SUM(Births) AS num_babies
+	FROM names
+    WHERE Gender = 'F'
+	GROUP BY Year, Name
+),
+ranked_girl_names AS(
+	SELECT Year, Name, ROW_NUMBER() OVER (PARTITION BY Year ORDER BY num_babies DESC) AS Popularity
+	FROM girl_names
+),
+top_girl_names AS(
+	SELECT Year, Name, Popularity
+	FROM ranked_girl_names
+	WHERE Popularity < 4
+)
+SELECT b.Year, b.Popularity, b.Name BoyName, g.Name GirlName
+FROM top_boy_names b
+JOIN top_girl_names g ON b.Year = g.Year AND b.Popularity = g.Popularity
+ORDER BY b.Year, b.Popularity;
 -- Task 2: For each decade, return the 3 most popular girl names and 3 most popular boy names
 
 -- Objective 3: Compare popularity across regions
