@@ -133,7 +133,15 @@ FROM top_boy_names b
 JOIN top_girl_names g ON b.Year = g.Year AND b.Popularity = g.Popularity
 ORDER BY b.Year, b.Popularity;
 -- Task 2: For each decade, return the 3 most popular girl names and 3 most popular boy names
-
+WITH RankedNames AS(
+	SELECT (Year / 10) * 10 AS Decade, Name, Gender, SUM(Births) AS TotalBirths, ROW_NUMBER() OVER (PARTITION BY (Year / 10) * 10, Gender ORDER BY SUM(Births) DESC) AS Rank
+	FROM names
+	GROUP BY (Year / 10) * 10, Gender, Name
+)
+SELECT Decade, Gender, Name, TotalBirths, Rank
+FROM RankedNames
+WHERE Rank <=3
+ORDER BY Decade, Gender, Rank;
 -- Objective 3: Compare popularity across regions
 
 -- Task 1: Return the number of babies born in each of the six regions (NOTE: The state of MI should be in the Midwest region)
