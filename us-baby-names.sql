@@ -133,15 +133,56 @@ FROM top_boy_names b
 JOIN top_girl_names g ON b.Year = g.Year AND b.Popularity = g.Popularity
 ORDER BY b.Year, b.Popularity;
 -- Task 2: For each decade, return the 3 most popular girl names and 3 most popular boy names
-WITH RankedNames AS(
-	SELECT (Year / 10) * 10 AS Decade, Name, Gender, SUM(Births) AS TotalBirths, ROW_NUMBER() OVER (PARTITION BY (Year / 10) * 10, Gender ORDER BY SUM(Births) DESC) AS Rank
+WITH boy_names AS(
+	SELECT (
+		CASE 
+			WHEN Year BETWEEN 1980 AND 1989 THEN '1980s'
+			WHEN Year BETWEEN 1990 AND 1999 THEN '1990s'
+			WHEN Year BETWEEN 2000 AND 2009 THEN '2000s'
+            ELSE 'None'
+            END
+		) AS Decade,
+		Name, SUM(Births) AS num_babies
 	FROM names
-	GROUP BY (Year / 10) * 10, Gender, Name
+    WHERE Gender = 'M'
+	GROUP BY Decade, Name
+),
+ranked_boy_names AS(
+	SELECT Decade, Name, ROW_NUMBER() OVER (PARTITION BY Decade ORDER BY num_babies DESC) AS Popularity
+	FROM boy_names
+),
+top_boy_names AS(
+	SELECT Decade, Name, Popularity
+	FROM ranked_boy_names
+	WHERE Popularity < 4
+),
+girl_names AS(
+	SELECT (
+		CASE 
+			WHEN Year BETWEEN 1980 AND 1989 THEN '1980s'
+			WHEN Year BETWEEN 1990 AND 1999 THEN '1990s'
+			WHEN Year BETWEEN 2000 AND 2010 THEN '2000s'
+            ELSE 'None'
+            END
+		) AS Decade,
+		Name, SUM(Births) AS num_babies
+	FROM names
+    WHERE Gender = 'F'
+	GROUP BY Decade, Name
+),
+ranked_girl_names AS(
+	SELECT Decade, Name, ROW_NUMBER() OVER (PARTITION BY Decade ORDER BY num_babies DESC) AS Popularity
+	FROM girl_names
+),
+top_girl_names AS(
+	SELECT Decade, Name, Popularity
+	FROM ranked_girl_names
+	WHERE Popularity < 4
 )
-SELECT Decade, Gender, Name, TotalBirths, Rank
-FROM RankedNames
-WHERE Rank <=3
-ORDER BY Decade, Gender, Rank;
+SELECT b.Decade, b.Popularity, b.Name BoyName, g.Name GirlName
+FROM top_boy_names b
+JOIN top_girl_names g ON b.Decade = g.Decade AND b.Popularity = g.Popularity
+ORDER BY b.Decade, b.Popularity;
 -- Objective 3: Compare popularity across regions
 
 -- Task 1: Return the number of babies born in each of the six regions (NOTE: The state of MI should be in the Midwest region)
